@@ -7,6 +7,7 @@ import Contact from "./pages/Contact";
 import Projects from "./pages/Projects";
 import Hikes from "./pages/Hikes";
 import FriendsFam from "./pages/FriendsFam";
+import Thoughts from "./pages/Thoughts";
 import "./index.css";
 
 export default function App() {
@@ -20,7 +21,7 @@ export default function App() {
 
           <nav>
             <Link to="/">Home</Link>
-            <Link to="/admin">Writing</Link>
+            <Link to="/thoughts">Thoughts</Link>
             <Link to="/projects">Projects</Link>
             <Link to="/hikes">Hikes</Link>
             <Link to="/friends">Friends & Family</Link>
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/posts/:id" element={<PostPage />} />
+          <Route path="/thoughts" element={<Thoughts />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/hikes" element={<Hikes />} />
           <Route path="/friends" element={<FriendsFam />} />

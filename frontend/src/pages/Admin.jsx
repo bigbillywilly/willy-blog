@@ -5,7 +5,7 @@ export default function Admin() {
   const [password, setPassword] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("writing");
+  const [category, setCategory] = useState("thoughts");
   const [imageFile, setImageFile] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ export default function Admin() {
 
     setTitle("");
     setContent("");
-    setCategory("writing");
+    setCategory("thoughts");
     setImageFile(null);
     alert("Post created!");
     navigate("/");
@@ -67,7 +67,7 @@ export default function Admin() {
     setIsAuthenticated(false);
     setTitle("");
     setContent("");
-    setCategory("writing");
+    setCategory("thoughts");
     setImageFile(null);
   }
 
@@ -120,7 +120,7 @@ export default function Admin() {
       />
 
       <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option value="writing">Writing</option>
+        <option value="thoughts">Thoughts</option>
         <option value="projects">Projects</option>
         <option value="hikes">Hikes</option>
         <option value="friends">Friends & Family</option>
