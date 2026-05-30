@@ -1,0 +1,155 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function Admin() {
+  const [password, setPassword] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [category, setCategory] = useState("writing");
+  const [imageFile, setImageFile] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  const ADMIN_PASSWORD = "WillyLove123"; // Change this to your desired password
+
+  function handleLogin() {
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setPassword("");
+    } else {
+      alert("Incorrect password");
+      setPassword("");
+    }
+  }
+
+  async function createPost() {
+    if (!title.trim() || !content.trim()) {
+      alert("Please fill in both title and content");
+      return;
+    }
+
+    if ((category === "hikes" || category === "friends") && !imageFile) {
+      alert("Please upload an image for this category");
+      return;
+    }
+
+    let imageUrl = null;
+    if (imageFile) {
+      const reader = new FileReader();
+      imageUrl = await new Promise((resolve) => {
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(imageFile);
+      });
+    }
+
+    const res = await fetch("http://localhost:8081/api/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title, content, category, imageUrl }),
+    });
+
+    if (!res.ok) {
+      alert("Failed to create post");
+      return;
+    }
+
+    setTitle("");
+    setContent("");
+    setCategory("writing");
+    setImageFile(null);
+    alert("Post created!");
+    navigate("/");
+  }
+
+  function handleLogout() {
+    setIsAuthenticated(false);
+    setTitle("");
+    setContent("");
+    setCategory("writing");
+    setImageFile(null);
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <section>
+        <h2>Admin Login</h2>
+
+        <input
+          type="password"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") handleLogin();
+          }}
+        />
+
+        <button onClick={handleLogin}>
+          Login
+        </button>
+      </section>
+    );
+  }
+
+  return (
+    <section>
+      <h2>Create Post</h2>
+      <p style={{ fontSize: "12px", color: "#666" }}>
+        <button 
+          onClick={handleLogout}
+          style={{ 
+            background: "none", 
+            border: "none", 
+            color: "#0066cc", 
+            cursor: "pointer",
+            padding: 0,
+            fontSize: "12px"
+          }}
+        >
+          Logout
+        </button>
+      </p>
+
+      <input
+        type="text"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+
+      <select value={category} onChange={(e) => setCategory(e.target.value)}>
+        <option value="writing">Writing</option>
+        <option value="projects">Projects</option>
+        <option value="hikes">Hikes</option>
+        <option value="friends">Friends & Family</option>
+      </select>
+
+      {(category === "hikes" || category === "friends") && (
+        <div>
+          <label>
+            Upload Image (JPEG/PNG):
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+            />
+          </label>
+          {imageFile && <p style={{ fontSize: "12px", color: "#666" }}>Selected: {imageFile.name}</p>}
+        </div>
+      )}
+
+      <textarea
+        placeholder="Content"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        rows={10}
+      />
+
+      <button onClick={createPost}>
+        Create Post
+      </button>
+    </section>
+  );
+}
