@@ -3,13 +3,12 @@ export default function About() {
     <section>
       <h2>About</h2>
       <p>
-        I am willy and this is my blog as a student, software dev (hoping to be), insurance agent (currently), and learning enthusiast.
+        I am a aspiring swe, avid reader and hiker, and number one fan of my girlfriend based in Salt Lake City, UT.
       </p>
 
       <p>
-        this blog will be about my projects, friends + fam, and anything else I want to learn/remember.
+        I love hiking, climbing, and creating.
       </p>
-
     </section>
   );
 }
