@@ -19,12 +19,15 @@ export default function Home() {
       <section>
         <h2>About</h2>
         <p>
-          I am a Computer Science student at the University of Utah.
+          I am a aspiring swe, avid reader and hiker, and number one fan of my girlfrend based in Salt Lake City, UT.
         </p>
 
         <p>
-          This website is a personal archive for my life, projects, writing,
-          trips, photos, and anything else I want to remember.
+          I love hiking, climbing, and creating. I plan on becoming a library of knowledge for both finances and computer science.
+        </p>
+
+        <p>
+          I have many aliases, but currently I go by Willy.
         </p>
       </section>
 
