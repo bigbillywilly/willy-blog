@@ -193,16 +193,31 @@ button {
   margin-top: 10px;
   font-weight: 600;
 }
-  padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  margin-bottom: 20px;
-  margin-top: 10px;
-}
 
 button:hover {
   opacity: 0.8;
+}
+
+.upload-button {
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  background-color: #4a9eff;
+  color: #000000;
+  padding: 12px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.upload-button:hover {
+  opacity: 0.8;
+  text-decoration: none;
 }
 
 article {
