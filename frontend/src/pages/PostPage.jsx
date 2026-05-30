@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function PostPage() {
   const { id } = useParams();
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   async function loadPost() {
     try {
@@ -22,7 +24,7 @@ export default function PostPage() {
   }, [id]);
 
   if (error) {
-    return <div><p>Error: {error}</p><Link to="/">Back to home</Link></div>;
+    return <div><p>Error: {error}</p><button onClick={() => navigate(-1)}>Back</button></div>;
   }
 
   if (!post) {
@@ -31,7 +33,7 @@ export default function PostPage() {
 
   return (
     <article>
-      <Link to="/">← Back</Link>
+      <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", color: "#4a9eff", cursor: "pointer", padding: 0, fontSize: "16px" }}>← Back</button>
       <h1>{post.title}</h1>
 
       <time>{new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
