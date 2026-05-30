@@ -129,10 +129,10 @@ export default function Admin() {
       {(category === "hikes" || category === "friends") && (
         <div>
           <label>
-            Upload Image (JPEG/PNG):
+            Upload Image (JPEG/PNG/HEIC):
             <input
               type="file"
-              accept=".jpg,.jpeg,.png"
+              accept=".jpg,.jpeg,.png,.heic"
               onChange={(e) => setImageFile(e.target.files?.[0] || null)}
             />
           </label>
