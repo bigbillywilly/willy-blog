@@ -42,7 +42,7 @@ export default function Admin() {
       });
     }
 
-    const res = await fetch("http://localhost:8081/api/posts", {
+    const res = await fetch("https://willy-blog-production.up.railway.app/api/posts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

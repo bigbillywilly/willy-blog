@@ -4,7 +4,7 @@ export default function Hikes() {
   const [items, setItems] = useState([]);
 
   async function loadItems() {
-    const res = await fetch("http://localhost:8081/api/posts");
+    const res = await fetch("https://willy-blog-production.up.railway.app/api/posts");
     const data = await res.json();
     const filtered = data.filter((post) => post.category === "hikes");
     // Sort by newest first
