@@ -3,11 +3,11 @@ export default function About() {
     <section>
       <h2>About</h2>
       <p>
-        I am a aspiring swe, avid reader and hiker, and number one fan of my girlfriend based in Salt Lake City, UT.
+        I am currently a student at the University of Utah. I love to create software, learning to sell insurance and manage finances!
       </p>
 
       <p>
-        I love hiking, climbing, and creating.
+        I love my family, my friends, and my girlfriend.
       </p>
     </section>
   );
