@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import heic2any from "heic2any";
 
+const MAX_UPLOAD_FILE_BYTES = 15 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
+const JPEG_QUALITY = 0.82;
+
 export default function Admin() {
   const [password, setPassword] = useState("");
   const [title, setTitle] = useState("");
@@ -68,11 +72,39 @@ export default function Admin() {
       console.log("Conversion complete, new size:", convertedFile.size, "bytes");
     }
 
-    const reader = new FileReader();
-    return new Promise((resolve) => {
+    const originalDataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
       reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => reject(new Error("Failed to read image file"));
       reader.readAsDataURL(fileToConvert);
     });
+
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Failed to load image for compression"));
+      img.src = originalDataUrl;
+    });
+
+    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Could not prepare image for upload");
+    }
+
+    context.drawImage(image, 0, 0, width, height);
+
+    const compressedDataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+    console.log("Compressed image size (base64):", compressedDataUrl.length, "bytes");
+
+    return compressedDataUrl;
   }
 
   function handleLogin() {
@@ -235,9 +267,9 @@ export default function Admin() {
               multiple
               onChange={(e) => {
                 const files = Array.from(e.target.files || []);
-                const tooLarge = files.find((file) => file.size > 5 * 1024 * 1024);
+                const tooLarge = files.find((file) => file.size > MAX_UPLOAD_FILE_BYTES);
                 if (tooLarge) {
-                  alert("One or more images are too large! Please use images under 5MB each.");
+                  alert("One or more images are too large! Please use images under 15MB each. Large photos are compressed automatically, but extremely large originals can still fail.");
                   e.target.value = "";
                   setPendingImageFiles([]);
                 } else {
