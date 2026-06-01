@@ -4,7 +4,7 @@ export default function FriendsFam() {
   const [items, setItems] = useState([]);
 
   async function loadItems() {
-    const res = await fetch("https://willy-blog-production.up.railway.app/api/posts");
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`);
     const data = await res.json();
     const filtered = data.filter((post) => post.category === "friends");
     // Sort by newest first

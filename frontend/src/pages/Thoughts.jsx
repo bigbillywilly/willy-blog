@@ -5,7 +5,7 @@ export default function Thoughts() {
   const [posts, setPosts] = useState([]);
 
   async function loadPosts() {
-    const res = await fetch("https://willy-blog-production.up.railway.app/api/posts");
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`);
     const data = await res.json();
     const filtered = data.filter((post) => post.category === "thoughts");
     setPosts(filtered);

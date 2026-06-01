@@ -42,7 +42,7 @@ export default function Admin() {
       });
     }
 
-    const res = await fetch("https://willy-blog-production.up.railway.app/api/posts", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

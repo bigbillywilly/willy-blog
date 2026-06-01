@@ -10,7 +10,7 @@ export default function PostPage() {
 
   async function loadPost() {
     try {
-      const res = await fetch(`https://willy-blog-production.up.railway.app/api/posts/${id}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/${id}`);
       if (!res.ok) throw new Error("Post not found");
       const data = await res.json();
       setPost(data);
