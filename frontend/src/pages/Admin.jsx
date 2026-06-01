@@ -6,6 +6,7 @@ export default function Admin() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("thoughts");
+  const [pendingImageFiles, setPendingImageFiles] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [posts, setPosts] = useState([]);
@@ -29,6 +30,20 @@ export default function Admin() {
     } catch (err) {
       console.error("Error loading posts:", err);
     }
+  }
+
+  function addPendingImages() {
+    if (pendingImageFiles.length === 0) {
+      alert("Choose one or more images first.");
+      return;
+    }
+
+    setImageFiles((currentFiles) => [...currentFiles, ...pendingImageFiles]);
+    setPendingImageFiles([]);
+  }
+
+  function removeQueuedImage(indexToRemove) {
+    setImageFiles((currentFiles) => currentFiles.filter((_, index) => index !== indexToRemove));
   }
 
   async function convertFileToDataUrl(file) {
@@ -110,6 +125,7 @@ export default function Admin() {
     setTitle("");
     setContent("");
     setCategory("thoughts");
+    setPendingImageFiles([]);
     setImageFiles([]);
     alert("Post created!");
     loadPosts(); // Refresh post list
@@ -140,6 +156,7 @@ export default function Admin() {
     setTitle("");
     setContent("");
     setCategory("thoughts");
+    setPendingImageFiles([]);
     setImageFiles([]);
     setPosts([]);
   }
@@ -215,17 +232,52 @@ export default function Admin() {
                 if (tooLarge) {
                   alert("One or more images are too large! Please use images under 5MB each.");
                   e.target.value = "";
-                  setImageFiles([]);
+                  setPendingImageFiles([]);
                 } else {
-                  setImageFiles(files);
+                  setPendingImageFiles(files);
                 }
               }}
             />
           </label>
-          {imageFiles.length > 0 && (
+          <div style={{ marginTop: "10px" }}>
+            <button type="button" onClick={addPendingImages}>
+              Add Photos
+            </button>
+          </div>
+          {pendingImageFiles.length > 0 && (
             <p style={{ fontSize: "12px", color: "#666" }}>
-              Selected: {imageFiles.map((file) => file.name).join(", ")}
+              Ready to add: {pendingImageFiles.map((file) => file.name).join(", ")}
             </p>
+          )}
+          {imageFiles.length > 0 && (
+            <div style={{ marginTop: "10px" }}>
+              <p style={{ fontSize: "12px", color: "#666", marginBottom: "6px" }}>
+                Added photos:
+              </p>
+              <ul style={{ margin: 0, paddingLeft: "18px" }}>
+                {imageFiles.map((file, index) => (
+                  <li key={`${file.name}-${index}`} style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>
+                    {file.name}
+                    <button
+                      type="button"
+                      onClick={() => removeQueuedImage(index)}
+                      style={{
+                        marginLeft: "10px",
+                        background: "none",
+                        border: "none",
+                        color: "#ff6b6b",
+                        cursor: "pointer",
+                        padding: 0,
+                        fontSize: "12px",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       )}
