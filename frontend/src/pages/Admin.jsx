@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import heic2any from "heic2any";
 
 export default function Admin() {
@@ -7,11 +6,52 @@ export default function Admin() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("thoughts");
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
+  const [posts, setPosts] = useState([]);
 
   const ADMIN_PASSWORD = "WillyLove123"; // Change this to your desired password
+
+  // Load posts when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadPosts();
+    }
+  }, [isAuthenticated]);
+
+  async function loadPosts() {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`);
+      const data = await res.json();
+      // Sort by newest first
+      data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setPosts(data);
+    } catch (err) {
+      console.error("Error loading posts:", err);
+    }
+  }
+
+  async function convertFileToDataUrl(file) {
+    let fileToConvert = file;
+
+    if (file.type === "image/heic" || file.name.toLowerCase().endsWith(".heic")) {
+      console.log("Converting HEIC to JPEG...");
+      const convertedBlob = await heic2any({ blob: file });
+      const convertedFile = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+      fileToConvert = new File(
+        [convertedFile],
+        file.name.replace(/\.heic$/i, ".jpg"),
+        { type: "image/jpeg" }
+      );
+      console.log("Conversion complete, new size:", convertedFile.size, "bytes");
+    }
+
+    const reader = new FileReader();
+    return new Promise((resolve) => {
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(fileToConvert);
+    });
+  }
 
   function handleLogin() {
     if (password === ADMIN_PASSWORD) {
@@ -29,33 +69,28 @@ export default function Admin() {
       return;
     }
 
-    if ((category === "hikes" || category === "friends") && !imageFile) {
+    if ((category === "hikes" || category === "friends") && imageFiles.length === 0) {
       alert("Please upload an image for this category");
       return;
     }
 
-    let imageUrl = null;
-    if (imageFile) {
-      let fileToConvert = imageFile;
-      
-      // Convert HEIC to JPEG if needed
-      if (imageFile.type === "image/heic" || imageFile.name.toLowerCase().endsWith(".heic")) {
-        console.log("Converting HEIC to JPEG...");
-        const convertedBlob = await heic2any({ blob: imageFile });
-        fileToConvert = new File([convertedBlob], imageFile.name.replace(/\.heic$/i, ".jpg"), { type: "image/jpeg" });
-        console.log("Conversion complete, new size:", convertedBlob.size, "bytes");
-      }
-      
-      const reader = new FileReader();
-      imageUrl = await new Promise((resolve) => {
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(fileToConvert);
-      });
-      console.log("Image size (base64):", imageUrl.length, "bytes");
+    let imageUrls = [];
+    if (imageFiles.length > 0) {
+      imageUrls = await Promise.all(imageFiles.map(async (file) => {
+        const dataUrl = await convertFileToDataUrl(file);
+        console.log("Image size (base64):", dataUrl.length, "bytes");
+        return dataUrl;
+      }));
     }
 
-    const body = { title, content, category, imageUrl };
-    console.log("Sending post:", { title, content, category, imageUrlSize: imageUrl?.length });
+    const body = {
+      title,
+      content,
+      category,
+      imageUrl: imageUrls[0] ?? null,
+      imageUrls: imageUrls.length > 0 ? JSON.stringify(imageUrls) : null,
+    };
+    console.log("Sending post:", { title, content, category, imageUrlSize: imageUrls[0]?.length, imageCount: imageUrls.length });
 
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`, {
       method: "POST",
@@ -75,9 +110,29 @@ export default function Admin() {
     setTitle("");
     setContent("");
     setCategory("thoughts");
-    setImageFile(null);
+    setImageFiles([]);
     alert("Post created!");
-    navigate("/");
+    loadPosts(); // Refresh post list
+  }
+
+  async function deletePost(id) {
+    if (!confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const error = await res.text();
+      console.error("Server error:", error);
+      alert("Failed to delete post: " + error);
+      return;
+    }
+
+    alert("Post deleted!");
+    loadPosts(); // Refresh post list
   }
 
   function handleLogout() {
@@ -85,7 +140,8 @@ export default function Admin() {
     setTitle("");
     setContent("");
     setCategory("thoughts");
-    setImageFile(null);
+    setImageFiles([]);
+    setPosts([]);
   }
 
   if (!isAuthenticated) {
@@ -112,8 +168,8 @@ export default function Admin() {
 
   return (
     <section>
-      <h2>Create Post</h2>
-      <p style={{ fontSize: "12px", color: "#666" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+        <h2>Admin Dashboard</h2>
         <button 
           onClick={handleLogout}
           style={{ 
@@ -122,13 +178,15 @@ export default function Admin() {
             color: "#0066cc", 
             cursor: "pointer",
             padding: 0,
-            fontSize: "12px"
+            fontSize: "14px",
+            textDecoration: "underline"
           }}
         >
           Logout
         </button>
-      </p>
+      </div>
 
+      <h3>Create New Post</h3>
       <input
         type="text"
         placeholder="Title"
@@ -146,23 +204,29 @@ export default function Admin() {
       {(category === "hikes" || category === "friends") && (
         <div>
           <label>
-            Upload Image (JPEG/PNG/HEIC):
+            Upload Images (JPEG/PNG/HEIC):
             <input
               type="file"
               accept=".jpg,.jpeg,.png,.heic"
+              multiple
               onChange={(e) => {
-                const file = e.target.files?.[0] || null;
-                if (file && file.size > 5 * 1024 * 1024) {
-                  alert("Image is too large! Please use an image under 5MB.");
+                const files = Array.from(e.target.files || []);
+                const tooLarge = files.find((file) => file.size > 5 * 1024 * 1024);
+                if (tooLarge) {
+                  alert("One or more images are too large! Please use images under 5MB each.");
                   e.target.value = "";
-                  setImageFile(null);
+                  setImageFiles([]);
                 } else {
-                  setImageFile(file);
+                  setImageFiles(files);
                 }
               }}
             />
           </label>
-          {imageFile && <p style={{ fontSize: "12px", color: "#666" }}>Selected: {imageFile.name}</p>}
+          {imageFiles.length > 0 && (
+            <p style={{ fontSize: "12px", color: "#666" }}>
+              Selected: {imageFiles.map((file) => file.name).join(", ")}
+            </p>
+          )}
         </div>
       )}
 
@@ -170,12 +234,59 @@ export default function Admin() {
         placeholder="Content"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        rows={10}
+        rows={6}
       />
 
       <button onClick={createPost}>
         Create Post
       </button>
+
+      <h3 style={{ marginTop: "60px", marginBottom: "30px" }}>All Posts</h3>
+      {posts.length === 0 ? (
+        <p>No posts yet.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+          {posts.map((post) => (
+            <div
+              key={post.id}
+              style={{
+                padding: "20px",
+                border: "1px solid #444",
+                borderRadius: "5px",
+                position: "relative",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: "0 0 10px 0", color: "#4a9eff" }}>{post.title}</h4>
+                  <p style={{ margin: "0 0 10px 0", fontSize: "12px", color: "#888" }}>
+                    {post.category} • {new Date(post.createdAt).toLocaleDateString()}
+                  </p>
+                  <p style={{ margin: "0", fontSize: "14px", color: "#ccc", lineHeight: "1.5" }}>
+                    {post.content.substring(0, 200)}
+                    {post.content.length > 200 ? "..." : ""}
+                  </p>
+                </div>
+                <button
+                  onClick={() => deletePost(post.id)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#ff6b6b",
+                    cursor: "pointer",
+                    fontSize: "20px",
+                    padding: "0 10px 0 20px",
+                    flexShrink: 0,
+                  }}
+                  title="Delete post"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

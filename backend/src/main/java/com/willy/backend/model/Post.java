@@ -23,5 +23,8 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String imageUrl; // Base64 or file path for images
 
+    @Column(columnDefinition = "TEXT")
+    private String imageUrls; // JSON array of base64 image URLs for slideshow posts
+
     private LocalDateTime createdAt = LocalDateTime.now();
 }

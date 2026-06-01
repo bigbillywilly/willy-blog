@@ -45,7 +45,7 @@ export default function App() {
         </Routes>
       </main>
 
-      <Link to="/admin" className="upload-button">Upload a Post</Link>
+      <Link to="/admin" className="upload-button">Admin</Link>
 
       <footer>
         <p>© 2026 William Ngo. All Rights Reserved.</p>

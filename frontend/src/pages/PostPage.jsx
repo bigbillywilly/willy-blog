@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import PhotoSlideshow from "../components/PhotoSlideshow";
+import { getPostImages } from "../utils/postImages";
 
 export default function PostPage() {
   const { id } = useParams();
@@ -37,6 +39,8 @@ export default function PostPage() {
       <h1>{post.title}</h1>
 
       <time>{new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+
+      <PhotoSlideshow images={getPostImages(post)} alt={post.title} wrapperStyle={{ marginTop: "20px", marginBottom: "20px" }} imageStyle={{ width: "100%", maxWidth: "720px", height: "auto", aspectRatio: "1 / 1" }} />
 
       <div>
         {post.content}

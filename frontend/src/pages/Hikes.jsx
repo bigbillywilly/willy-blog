@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import PhotoSlideshow from "../components/PhotoSlideshow";
+import { getPostImages } from "../utils/postImages";
 
 export default function Hikes() {
   const [items, setItems] = useState([]);
@@ -38,19 +40,7 @@ export default function Hikes() {
             >
               <h3 style={{ marginBottom: "20px", textAlign: "left" }}>{item.title}</h3>
               <div style={{ display: "flex", gap: "30px", alignItems: "flex-start" }}>
-                {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    style={{
-                      width: "300px",
-                      height: "300px",
-                      objectFit: "cover",
-                      borderRadius: "5px",
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
+                <PhotoSlideshow images={getPostImages(item)} alt={item.title} />
                 <p style={{ fontSize: "14px", color: "#ccc", lineHeight: "1.6" }}>
                   {item.content}
                 </p>
