@@ -133,7 +133,16 @@ export default function Admin() {
             <input
               type="file"
               accept=".jpg,.jpeg,.png,.heic"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                if (file && file.size > 5 * 1024 * 1024) {
+                  alert("Image is too large! Please use an image under 5MB.");
+                  e.target.value = "";
+                  setImageFile(null);
+                } else {
+                  setImageFile(file);
+                }
+              }}
             />
           </label>
           {imageFile && <p style={{ fontSize: "12px", color: "#666" }}>Selected: {imageFile.name}</p>}
