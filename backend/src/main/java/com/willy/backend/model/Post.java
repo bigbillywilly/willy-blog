@@ -20,6 +20,7 @@ public class Post {
 
     private String category; // writing, projects, hikes, friends
 
+    @Column(columnDefinition = "TEXT")
     private String imageUrl; // Base64 or file path for images
 
     private LocalDateTime createdAt = LocalDateTime.now();

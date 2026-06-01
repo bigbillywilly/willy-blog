@@ -7,6 +7,10 @@ export default function Hikes() {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`);
     const data = await res.json();
     const filtered = data.filter((post) => post.category === "hikes");
+    console.log("Hikes loaded:", filtered);
+    filtered.forEach(item => {
+      console.log(`Post "${item.title}" - imageUrl exists:`, !!item.imageUrl, "size:", item.imageUrl?.length);
+    });
     // Sort by newest first
     filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     setItems(filtered);
@@ -30,25 +34,27 @@ export default function Hikes() {
                 marginBottom: "60px",
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
               }}
             >
-              {item.imageUrl && (
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  style={{
-                    width: "100%",
-                    maxWidth: "500px",
-                    marginBottom: "20px",
-                    borderRadius: "5px",
-                  }}
-                />
-              )}
-              <h3 style={{ marginBottom: "10px", textAlign: "center" }}>{item.title}</h3>
-              <p style={{ fontSize: "14px", color: "#ccc", textAlign: "center", maxWidth: "500px" }}>
-                {item.content}
-              </p>
+              <h3 style={{ marginBottom: "20px", textAlign: "left" }}>{item.title}</h3>
+              <div style={{ display: "flex", gap: "30px", alignItems: "flex-start" }}>
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    style={{
+                      width: "300px",
+                      height: "300px",
+                      objectFit: "cover",
+                      borderRadius: "5px",
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <p style={{ fontSize: "14px", color: "#ccc", lineHeight: "1.6" }}>
+                  {item.content}
+                </p>
+              </div>
             </div>
           ))
         )}

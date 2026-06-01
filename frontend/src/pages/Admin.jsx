@@ -40,18 +40,24 @@ export default function Admin() {
         reader.onload = (e) => resolve(e.target.result);
         reader.readAsDataURL(imageFile);
       });
+      console.log("Image size (base64):", imageUrl.length, "bytes");
     }
+
+    const body = { title, content, category, imageUrl };
+    console.log("Sending post:", { title, content, category, imageUrlSize: imageUrl?.length });
 
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title, content, category, imageUrl }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
-      alert("Failed to create post");
+      const error = await res.text();
+      console.error("Server error:", error);
+      alert("Failed to create post: " + error);
       return;
     }
 
