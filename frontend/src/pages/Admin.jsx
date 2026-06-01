@@ -49,7 +49,14 @@ export default function Admin() {
   async function convertFileToDataUrl(file) {
     let fileToConvert = file;
 
-    if (file.type === "image/heic" || file.name.toLowerCase().endsWith(".heic")) {
+    const lowerName = file.name.toLowerCase();
+    if (
+      file.type === "image/heic" ||
+      file.type === "image/heif" ||
+      file.type === "image/heic-sequence" ||
+      lowerName.endsWith(".heic") ||
+      lowerName.endsWith(".heif")
+    ) {
       console.log("Converting HEIC to JPEG...");
       const convertedBlob = await heic2any({ blob: file });
       const convertedFile = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
@@ -221,10 +228,10 @@ export default function Admin() {
       {(category === "hikes" || category === "friends") && (
         <div>
           <label>
-            Upload Images (JPEG/PNG/HEIC):
+            Upload Images (JPEG/PNG/HEIC/HEIF):
             <input
               type="file"
-              accept=".jpg,.jpeg,.png,.heic"
+              accept="image/*,.jpg,.jpeg,.png,.heic,.heif"
               multiple
               onChange={(e) => {
                 const files = Array.from(e.target.files || []);
