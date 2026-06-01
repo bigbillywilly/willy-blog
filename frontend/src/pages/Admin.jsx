@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import heic2any from "heic2any";
 
 export default function Admin() {
   const [password, setPassword] = useState("");
@@ -35,10 +36,20 @@ export default function Admin() {
 
     let imageUrl = null;
     if (imageFile) {
+      let fileToConvert = imageFile;
+      
+      // Convert HEIC to JPEG if needed
+      if (imageFile.type === "image/heic" || imageFile.name.toLowerCase().endsWith(".heic")) {
+        console.log("Converting HEIC to JPEG...");
+        const convertedBlob = await heic2any({ blob: imageFile });
+        fileToConvert = new File([convertedBlob], imageFile.name.replace(/\.heic$/i, ".jpg"), { type: "image/jpeg" });
+        console.log("Conversion complete, new size:", convertedBlob.size, "bytes");
+      }
+      
       const reader = new FileReader();
       imageUrl = await new Promise((resolve) => {
         reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(imageFile);
+        reader.readAsDataURL(fileToConvert);
       });
       console.log("Image size (base64):", imageUrl.length, "bytes");
     }
