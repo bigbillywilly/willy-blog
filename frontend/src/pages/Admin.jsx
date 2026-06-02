@@ -50,62 +50,18 @@ export default function Admin() {
     setImageFiles((currentFiles) => currentFiles.filter((_, index) => index !== indexToRemove));
   }
 
-  async function convertFileToDataUrl(file) {
-    let fileToConvert = file;
+  async function uploadToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_PRESET);
 
-    const lowerName = file.name.toLowerCase();
-    if (
-      file.type === "image/heic" ||
-      file.type === "image/heif" ||
-      file.type === "image/heic-sequence" ||
-      lowerName.endsWith(".heic") ||
-      lowerName.endsWith(".heif")
-    ) {
-      console.log("Converting HEIC to JPEG...");
-      const convertedBlob = await heic2any({ blob: file });
-      const convertedFile = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-      fileToConvert = new File(
-        [convertedFile],
-        file.name.replace(/\.heic$/i, ".jpg"),
-        { type: "image/jpeg" }
-      );
-      console.log("Conversion complete, new size:", convertedFile.size, "bytes");
-    }
-
-    const originalDataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = () => reject(new Error("Failed to read image file"));
-      reader.readAsDataURL(fileToConvert);
-    });
-
-    const image = await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error("Failed to load image for compression"));
-      img.src = originalDataUrl;
-    });
-
-    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
-    const width = Math.max(1, Math.round(image.width * scale));
-    const height = Math.max(1, Math.round(image.height * scale));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-
-    const context = canvas.getContext("2d");
-    if (!context) {
-      throw new Error("Could not prepare image for upload");
-    }
-
-    context.drawImage(image, 0, 0, width, height);
-
-    const compressedDataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
-    console.log("Compressed image size (base64):", compressedDataUrl.length, "bytes");
-
-    return compressedDataUrl;
-  }
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD}/image/upload`,
+    { method: "POST", body: formData }
+  );
+  const data = await res.json();
+  return data.secure_url.replace('/upload/', '/upload/f_jpg/');
+}
 
   function handleLogin() {
     if (password === ADMIN_PASSWORD) {
@@ -130,11 +86,7 @@ export default function Admin() {
 
     let imageUrls = [];
     if (imageFiles.length > 0) {
-      imageUrls = await Promise.all(imageFiles.map(async (file) => {
-        const dataUrl = await convertFileToDataUrl(file);
-        console.log("Image size (base64):", dataUrl.length, "bytes");
-        return dataUrl;
-      }));
+      imageUrls = await Promise.all(imageFiles.map((file) => uploadToCloudinary(file)));
     }
 
     const body = {
